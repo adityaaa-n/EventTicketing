@@ -86,17 +86,24 @@ public class UserDashboard extends JFrame {
         // Tombol Refresh
         btnRefresh.addActionListener(e -> loadDataEvents());
 
-        // Tombol Beli (Logika Sederhana)
+        // Tombol Beli (Logika Transaksi)
         btnBeli.addActionListener(e -> {
             int selectedRow = tableEvents.getSelectedRow();
             if (selectedRow != -1) {
-                // Ambil ID Event dari kolom ke-0
+                // Ambil ID Event dari kolom ke-0 (Kolom ID)
                 int eventId = (int) tableModel.getValueAt(selectedRow, 0);
-                String namaEvent = (String) tableModel.getValueAt(selectedRow, 1);
                 
-                JOptionPane.showMessageDialog(this, 
-                    "Anda memilih event: " + namaEvent + "\n(Fitur Pembayaran akan kita buat selanjutnya!)");
-                // Nanti kita arahkan ke TicketDetailView di sini
+                // Ambil data detail event terbaru dari database
+                Event selectedEvent = eventDAO.getEventById(eventId);
+
+                if (selectedEvent != null) {
+                    if (selectedEvent.getKuota() > 0) {
+                        // Buka Jendela Order
+                        new OrderView(currentUser, selectedEvent).setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Maaf, Tiket Habis!", "Sold Out", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Pilih salah satu event di tabel dulu!");
             }
