@@ -18,7 +18,7 @@ public class RegisterView extends JFrame {
         super("Daftar Akun Baru");
 
         setSize(400, 350);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Agar kalau ditutup tidak keluar dari seluruh aplikasi
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
@@ -68,7 +68,7 @@ public class RegisterView extends JFrame {
         // 2. Aksi Tombol Kembali
         btnKembali.addActionListener(e -> {
             new LoginView().setVisible(true);
-            this.dispose(); // Tutup jendela register
+            this.dispose();
         });
     }
 
