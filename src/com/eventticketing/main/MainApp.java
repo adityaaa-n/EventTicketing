@@ -4,12 +4,10 @@ import javax.swing.SwingUtilities;
 
 public class MainApp {
     public static void main(String[] args) {
-        // Menjalankan GUI di Thread yang aman (Event Dispatch Thread)
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                // Membuka Jendela Login
-                new LoginView().setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() { 
+            @Override 
+            public void run() { 
+                new LoginView().setVisible(true); // Menampilkan jendela login
             }
         });
     }
