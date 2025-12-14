@@ -14,11 +14,10 @@ public class TicketDAO {
         conn = DatabaseConnection.getConnection();
     }
 
-    // 1. BUY: User memesan tiket baru
+    // BUY: User pesan tiket baru
     public boolean createTicket(Ticket ticket) {
         String sql = "INSERT INTO tickets (user_id, event_id, jumlah, total_harga, status) VALUES (?, ?, ?, ?, ?)";
         
-        // Kita perlu mengambil ID tiket yang baru saja dibuat untuk keperluan pembayaran nanti
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, ticket.getUserId());
             stmt.setInt(2, ticket.getEventId());
@@ -29,7 +28,6 @@ public class TicketDAO {
             int rowsInserted = stmt.executeUpdate();
             
             if (rowsInserted > 0) {
-                // Ambil ID tiket yang baru digenerate
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         ticket.setTicketId(generatedKeys.getInt(1));
@@ -43,7 +41,7 @@ public class TicketDAO {
         return false;
     }
 
-    // 2. READ: Ambil semua tiket milik satu user tertentu
+    // READ: Ambil semua tiket milik satu user tertentu
     public List<Ticket> getTicketsByUser(int userId) {
         List<Ticket> tickets = new ArrayList<>();
         String sql = "SELECT * FROM tickets WHERE user_id = ? ORDER BY tanggal_beli DESC";
@@ -70,7 +68,7 @@ public class TicketDAO {
         return tickets;
     }
 
-    // 3. UPDATE: Ubah status pembayaran (misal dari 'pending' ke 'paid')
+    // UPDATE: Ubah status pembayaran (misal dari 'pending' ke 'paid')
     public boolean updateTicketStatus(int ticketId, String status) {
         String sql = "UPDATE tickets SET status = ? WHERE ticket_id = ?";
         

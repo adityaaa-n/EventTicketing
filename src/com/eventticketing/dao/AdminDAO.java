@@ -15,7 +15,7 @@ public class AdminDAO {
         conn = DatabaseConnection.getConnection();
     }
 
-    // Login Admin
+    // Untuk Login Admin
     public Admin login(String email, String password) {
         Admin admin = null;
         String sql = "SELECT * FROM admins WHERE email = ? AND password = ?";

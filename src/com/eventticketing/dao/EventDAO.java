@@ -14,7 +14,7 @@ public class EventDAO {
         conn = DatabaseConnection.getConnection();
     }
 
-    // 1. CREATE: Tambah Event Baru
+    // CREATE: Tambah Event Baru
     public boolean addEvent(Event event) {
         String sql = "INSERT INTO events (nama_event, deskripsi, lokasi, tanggal, harga, kuota, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
@@ -22,7 +22,7 @@ public class EventDAO {
             stmt.setString(1, event.getNamaEvent());
             stmt.setString(2, event.getDeskripsi());
             stmt.setString(3, event.getLokasi());
-            stmt.setDate(4, event.getTanggal()); // java.sql.Date
+            stmt.setDate(4, event.getTanggal());
             stmt.setBigDecimal(5, event.getHarga());
             stmt.setInt(6, event.getKuota());
             stmt.setInt(7, event.getCreatedBy());
@@ -35,7 +35,7 @@ public class EventDAO {
         }
     }
 
-    // 2. READ: Ambil Semua Event (Untuk Tampilan User & Admin)
+    // READ: Ambil Semua Event (Untuk Tampilan User & Admin)
     public List<Event> getAllEvents() {
         List<Event> events = new ArrayList<>();
         String sql = "SELECT * FROM events ORDER BY tanggal ASC";
@@ -62,7 +62,7 @@ public class EventDAO {
         return events;
     }
 
-    // 3. READ: Ambil 1 Event berdasarkan ID (Untuk Detail Page)
+    // READ: Ambil 1 Event berdasarkan ID (Untuk Detail Page)
     public Event getEventById(int eventId) {
         Event event = null;
         String sql = "SELECT * FROM events WHERE event_id = ?";
@@ -89,7 +89,7 @@ public class EventDAO {
         return event;
     }
 
-    // 4. UPDATE: Edit Data Event
+    // UPDATE: Edit Data Event
     public boolean updateEvent(Event event) {
         String sql = "UPDATE events SET nama_event=?, deskripsi=?, lokasi=?, tanggal=?, harga=?, kuota=? WHERE event_id=?";
         
@@ -110,7 +110,7 @@ public class EventDAO {
         }
     }
 
-    // 5. DELETE: Hapus Event
+    // DELETE: Hapus Event
     public boolean deleteEvent(int eventId) {
         String sql = "DELETE FROM events WHERE event_id = ?";
         

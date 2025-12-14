@@ -12,7 +12,6 @@ public class UserDAO {
     private Connection conn;
 
     public UserDAO() {
-        // Mengambil koneksi dari class config yang sudah kita buat
         conn = DatabaseConnection.getConnection();
     }
 
@@ -65,8 +64,8 @@ public class UserDAO {
             ResultSet rs = stmt.executeQuery();
             return rs.next(); // True jika email ditemukan
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            e.printStackTrace(); 
+            return false; // Jika terjadi error, anggap email tidak ada
         }
     }
 }
