@@ -67,45 +67,49 @@ public class UserDashboard extends JFrame {
         scrollPane.setBorder(BorderFactory.createTitledBorder("Daftar Event Tersedia"));
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- 3. Panel Tombol Aksi (Beli Tiket) ---
+        // --- 3. Panel Tombol Aksi ---
         JPanel panelBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
+        JButton btnHistory = new JButton("Tiket Saya"); // Tombol Baru
         JButton btnRefresh = new JButton("Refresh Data");
         JButton btnBeli = new JButton("Beli Tiket");
         
-        // Percantik Tombol Beli
+        // Styling Tombol (Opsional biar bagus)
+        btnHistory.setBackground(new Color(255, 140, 0)); // Oranye
+        btnHistory.setForeground(Color.WHITE);
         btnBeli.setBackground(new Color(34, 139, 34)); // Hijau
         btnBeli.setForeground(Color.WHITE);
-        btnBeli.setFont(new Font("Arial", Font.BOLD, 14));
 
+        // Tambahkan ke panel
+        panelBottom.add(btnHistory);
         panelBottom.add(btnRefresh);
         panelBottom.add(btnBeli);
         add(panelBottom, BorderLayout.SOUTH);
 
-        // --- Event Handling Tombol ---
+        // --- Event Handling ---
         
-        // Tombol Refresh
+        // Aksi Tombol History (PENTING)
+        btnHistory.addActionListener(e -> {
+            new MyTicketView(currentUser).setVisible(true);
+        });
+
+        // Aksi Tombol Refresh
         btnRefresh.addActionListener(e -> loadDataEvents());
 
-        // Tombol Beli (Logika Transaksi)
+        // Aksi Tombol Beli (Pastikan ini pakai kode Transaksi yang ASLI/Lengkap kemarin)
         btnBeli.addActionListener(e -> {
             int selectedRow = tableEvents.getSelectedRow();
             if (selectedRow != -1) {
-                // Ambil ID Event dari kolom ke-0 (Kolom ID)
                 int eventId = (int) tableModel.getValueAt(selectedRow, 0);
-                
-                // Ambil data detail event terbaru dari database
                 Event selectedEvent = eventDAO.getEventById(eventId);
 
-                if (selectedEvent != null) {
-                    if (selectedEvent.getKuota() > 0) {
-                        // Buka Jendela Order
-                        new OrderView(currentUser, selectedEvent).setVisible(true);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Maaf, Tiket Habis!", "Sold Out", JOptionPane.WARNING_MESSAGE);
-                    }
+                if (selectedEvent != null && selectedEvent.getKuota() > 0) {
+                    new OrderView(currentUser, selectedEvent).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Maaf, Tiket Habis!");
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "Pilih salah satu event di tabel dulu!");
+                JOptionPane.showMessageDialog(this, "Pilih event dulu!");
             }
         });
     }

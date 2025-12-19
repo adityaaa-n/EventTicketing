@@ -41,7 +41,7 @@ public class AdminDashboard extends JFrame {
         // Tombol Logout
         JButton btnLogout = new JButton("Logout");
         add(btnLogout, BorderLayout.SOUTH);
- 
+
         // --- Event Handling ---
         btnKelolaEvent.addActionListener(e -> {
             new ManageEventView(currentAdmin).setVisible(true);

@@ -89,6 +89,7 @@ public class LoginView extends JFrame {
             JOptionPane.showMessageDialog(this, "Login Berhasil sebagai User!\nHalo, " + user.getNama());
             
             // BUKA DASHBOARD USER
+            // Kita kirim objek 'user' agar dashboard tahu siapa yang login
             new src.com.eventticketing.view.user.UserDashboard(user).setVisible(true);
             
             this.dispose(); // Tutup jendela login
