@@ -1,10 +1,9 @@
 package src.com.eventticketing.view.auth;
 
+import src.com.eventticketing.dao.UserDAO;
+import src.com.eventticketing.dao.AdminDAO;
 import src.com.eventticketing.model.User;
 import src.com.eventticketing.model.Admin;
-import src.com.eventticketing.view.user.UserDashboard;
-import src.com.eventticketing.view.admin.AdminDashboard;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -17,11 +16,12 @@ public class LoginView extends JFrame {
     private JButton btnLogin, btnRegister;
 
     public LoginView() {
-        super("Login - Event Ticketing (Mode UI Demo)");
+        super("Login - Event Ticketing");
         
+        // Setting Jendela Utama
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); 
+        setLocationRelativeTo(null); // Posisi di tengah layar
         setLayout(new BorderLayout());
 
         // Panel Judul
@@ -53,23 +53,26 @@ public class LoginView extends JFrame {
         panelButton.add(btnRegister);
         add(panelButton, BorderLayout.SOUTH);
 
-        // --- EVENT HANDLING (LOGIKA DUMMY) ---
+        // --- EVENT HANDLING (Logika Tombol) ---
         
         // 1. Aksi Tombol Login
         btnLogin.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                prosesLoginDummy();
+                prosesLogin();
             }
         });
 
         // 2. Aksi Tombol Register
         btnRegister.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Fitur Belum ADA");
+            // Membuka jendela Register
+            new RegisterView().setVisible(true);
+            // Menutup jendela Login saat ini
+            this.dispose();
         });
     }
 
-    private void prosesLoginDummy() {
+    private void prosesLogin() {
         String email = txtEmail.getText();
         String password = new String(txtPassword.getPassword());
 
@@ -78,30 +81,33 @@ public class LoginView extends JFrame {
             return;
         }
 
-        // --- LOGIKA HARDCODED (TANPA DATABASE) ---
-        
-        // Skenario 1: Login sebagai USER
-        if (email.equals("user") && password.equals("user")) {
-            // Buat objek sementara 
-            User dummyUser = new User(1, "User", email, password, null);
+        // Cek Login sebagai USER dulu
+        UserDAO userDAO = new UserDAO();
+        User user = userDAO.login(email, password);
+
+        if (user != null) {
+            JOptionPane.showMessageDialog(this, "Login Berhasil sebagai User!\nHalo, " + user.getNama());
             
-            JOptionPane.showMessageDialog(this, "Login Berhasil!\nHalo, " + dummyUser.getNama());
-            new UserDashboard(dummyUser).setVisible(true);
-            this.dispose();
-        } 
-        // Skenario 2: Login sebagai ADMIN
-        else if (email.equals("admin") && password.equals("admin")) {
-            // Buat objek sementara
-            Admin dummyAdmin = new Admin(1, "Admin", email, password, null);
+            // BUKA DASHBOARD USER
+            // Kita kirim objek 'user' agar dashboard tahu siapa yang login
+            new src.com.eventticketing.view.user.UserDashboard(user).setVisible(true);
             
-            JOptionPane.showMessageDialog(this, "Login Berhasil!\nHalo, " + dummyAdmin.getNama());
-            new AdminDashboard(dummyAdmin).setVisible(true); 
-            this.dispose();
-        } 
-        else {
-            JOptionPane.showMessageDialog(this, 
-                "Login Gagal! gunakan:\nUser: user/admin \n Pass: user/admin", 
-                "Info", JOptionPane.INFORMATION_MESSAGE);
+            this.dispose(); // Tutup jendela login
+        } else {
+            // Jika gagal user, coba cek apakah dia ADMIN?
+            AdminDAO adminDAO = new AdminDAO();
+            Admin admin = adminDAO.login(email, password);
+            
+            if (admin != null) {
+                JOptionPane.showMessageDialog(this, "Login Berhasil sebagai Admin!\nHalo, " + admin.getNama());
+                
+                // BUKA DASHBOARD ADMIN
+                new src.com.eventticketing.view.admin.AdminDashboard(admin).setVisible(true);
+                
+                this.dispose();
+            }else {
+                JOptionPane.showMessageDialog(this, "Email atau Password salah!", "Login Gagal", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 }

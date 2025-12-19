@@ -1,33 +1,38 @@
 package src.com.eventticketing.view.user;
 
+import src.com.eventticketing.dao.EventDAO;
+import src.com.eventticketing.model.Event;
 import src.com.eventticketing.model.User;
 import src.com.eventticketing.view.auth.LoginView;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 
 public class UserDashboard extends JFrame {
 
-    private User currentUser;
+    private User currentUser; // Menyimpan data user yang sedang login
     private JTable tableEvents;
     private DefaultTableModel tableModel;
+    private EventDAO eventDAO;
 
     public UserDashboard(User user) {
         this.currentUser = user;
+        this.eventDAO = new EventDAO();
 
         // Setup Window
-        setTitle("Dashboard User - Event Ticketing ");
+        setTitle("Dashboard User - Event Ticketing");
         setSize(800, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- 1. Header ---
+        // --- 1. Header (Sapaan User) ---
         JPanel panelHeader = new JPanel(new BorderLayout());
         panelHeader.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-        panelHeader.setBackground(new Color(70, 130, 180));
+        panelHeader.setBackground(new Color(70, 130, 180)); // Warna biru baja
 
-        JLabel lblWelcome = new JLabel("Halo, " + currentUser.getNama() + " (Mode Demo)");
+        JLabel lblWelcome = new JLabel("Halo, " + currentUser.getNama() + "!");
         lblWelcome.setFont(new Font("Arial", Font.BOLD, 20));
         lblWelcome.setForeground(Color.WHITE);
         
@@ -42,8 +47,10 @@ public class UserDashboard extends JFrame {
         add(panelHeader, BorderLayout.NORTH);
 
         // --- 2. Tabel Daftar Event ---
+        // Judul Kolom Tabel
         String[] columnNames = {"ID", "Nama Event", "Tanggal", "Lokasi", "Harga (Rp)", "Sisa Kuota"};
         tableModel = new DefaultTableModel(columnNames, 0) {
+            // Agar sel tabel tidak bisa diedit langsung
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; 
@@ -53,19 +60,20 @@ public class UserDashboard extends JFrame {
         tableEvents = new JTable(tableModel);
         tableEvents.setRowHeight(30);
         
-        // Panggil fungsi load data dummy
-        loadDataEventsDummy();
+        // Load data dari database saat aplikasi dibuka
+        loadDataEvents();
 
         JScrollPane scrollPane = new JScrollPane(tableEvents);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Daftar Event"));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Daftar Event Tersedia"));
         add(scrollPane, BorderLayout.CENTER);
 
-        // --- 3. Panel Tombol Aksi ---
+        // --- 3. Panel Tombol Aksi (Beli Tiket) ---
         JPanel panelBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnRefresh = new JButton("Refresh Data");
         JButton btnBeli = new JButton("Beli Tiket");
         
-        btnBeli.setBackground(new Color(34, 139, 34));
+        // Percantik Tombol Beli
+        btnBeli.setBackground(new Color(34, 139, 34)); // Hijau
         btnBeli.setForeground(Color.WHITE);
         btnBeli.setFont(new Font("Arial", Font.BOLD, 14));
 
@@ -73,40 +81,54 @@ public class UserDashboard extends JFrame {
         panelBottom.add(btnBeli);
         add(panelBottom, BorderLayout.SOUTH);
 
-        // --- Event Handling ---
+        // --- Event Handling Tombol ---
         
-        // Tombol Refresh (Reset ke data dummy)
-        btnRefresh.addActionListener(e -> {
-            loadDataEventsDummy();
-            JOptionPane.showMessageDialog(this, "Data direfresh");
-        });
+        // Tombol Refresh
+        btnRefresh.addActionListener(e -> loadDataEvents());
 
-        // Tombol Beli (Hanya Tampilan)
+        // Tombol Beli (Logika Transaksi)
         btnBeli.addActionListener(e -> {
             int selectedRow = tableEvents.getSelectedRow();
             if (selectedRow != -1) {
-                String namaEvent = (String) tableModel.getValueAt(selectedRow, 1);
+                // Ambil ID Event dari kolom ke-0 (Kolom ID)
+                int eventId = (int) tableModel.getValueAt(selectedRow, 0);
                 
-                // Tampilkan pesan saja
-                JOptionPane.showMessageDialog(this, 
-                    "Anda memilih event: " + namaEvent + "\n\n" +
-                    "Fitur Pembelian Belum Ada",
-                    "Info Demo", JOptionPane.INFORMATION_MESSAGE);
-                
+                // Ambil data detail event terbaru dari database
+                Event selectedEvent = eventDAO.getEventById(eventId);
+
+                if (selectedEvent != null) {
+                    if (selectedEvent.getKuota() > 0) {
+                        // Buka Jendela Order
+                        new OrderView(currentUser, selectedEvent).setVisible(true);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Maaf, Tiket Habis!", "Sold Out", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Pilih salah satu event di tabel dulu!");
             }
         });
     }
 
-    // Method Dummy: Mengisi tabel manual
-    private void loadDataEventsDummy() {
+    // Method untuk mengambil data dari Database dan memasukkannya ke Tabel
+    private void loadDataEvents() {
+        // Kosongkan tabel dulu
         tableModel.setRowCount(0);
 
-        // DATA sementara
-        tableModel.addRow(new Object[]{1, "Konser Musik Java", "2025-12-31", "Jakarta", 150000, 100});
-        tableModel.addRow(new Object[]{2, "Festival Kuliner", "2025-10-10", "Bandung", 50000, 200});
-        tableModel.addRow(new Object[]{3, "Seminar Tech", "2025-08-17", "Surabaya", 75000, 50});
-        tableModel.addRow(new Object[]{4, "Pameran Seni", "2025-05-02", "Yogyakarta", 25000, 10});
+        // Ambil list event dari DAO
+        List<Event> listEvents = eventDAO.getAllEvents();
+
+        // Masukkan ke tabel baris per baris
+        for (Event ev : listEvents) {
+            Object[] rowData = {
+                ev.getEventId(),
+                ev.getNamaEvent(),
+                ev.getTanggal(),
+                ev.getLokasi(),
+                ev.getHarga(),
+                ev.getKuota()
+            };
+            tableModel.addRow(rowData);
+        }
     }
 }
