@@ -8,6 +8,8 @@ import src.com.eventticketing.model.User;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class MyTicketView extends JFrame {
@@ -15,73 +17,80 @@ public class MyTicketView extends JFrame {
     private User currentUser;
     private TicketDAO ticketDAO;
     private EventDAO eventDAO; 
+    private JTable table;
+    private DefaultTableModel model;
+    private List<Ticket> tickets; // Simpan list tiket di memori agar mudah diambil
 
     public MyTicketView(User user) {
         this.currentUser = user;
         this.ticketDAO = new TicketDAO();
         this.eventDAO = new EventDAO();
 
-        setTitle("Riwayat Tiket Saya - Event Ticketing");
+        setTitle("Riwayat Tiket Saya");
         setSize(750, 450);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Agar aplikasi tidak tertutup total saat jendela ini diclose
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // --- Header ---
-        JLabel lblTitle = new JLabel("Tiket Saya", SwingConstants.CENTER);
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 22));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        // Header
+        JLabel lblTitle = new JLabel("Klik pada tiket untuk melihat detail (E-Ticket)", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
         add(lblTitle, BorderLayout.NORTH);
 
-        // --- Tabel Riwayat ---
-        String[] columns = {"ID Tiket", "Nama Event", "Tanggal Beli", "Jml", "Total Harga", "Status"};
-        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+        // Tabel
+        String[] columns = {"ID Tiket", "Nama Event", "Tanggal Beli", "Status"};
+        model = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Agar tabel tidak bisa diedit
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
         
-        JTable table = new JTable(model);
-        table.setRowHeight(25);
-        
-        // Panggil fungsi untuk mengambil data dari Database
+        table = new JTable(model);
+        table.setRowHeight(30);
         loadData(model);
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        add(scrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // --- Tombol Kembali ---
-        JPanel panelBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        // --- FITUR BARU: KLIK TABEL BUKA DETAIL ---
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Ambil objek ticket dari List berdasarkan index baris
+                    Ticket selectedTicket = tickets.get(selectedRow);
+                    
+                    // Ambil detail event-nya juga
+                    Event event = eventDAO.getEventById(selectedTicket.getEventId());
+                    
+                    if (event != null) {
+                        // Buka Jendela Detail (E-Ticket)
+                        new TicketDetailView(currentUser, selectedTicket, event).setVisible(true);
+                    }
+                }
+            }
+        });
+
+        // Tombol Tutup
         JButton btnBack = new JButton("Tutup");
         btnBack.addActionListener(e -> this.dispose());
-        
-        panelBottom.add(btnBack);
-        add(panelBottom, BorderLayout.SOUTH);
+        add(btnBack, BorderLayout.SOUTH);
     }
 
     private void loadData(DefaultTableModel model) {
-        // Ambil semua tiket milik user ini
-        List<Ticket> tickets = ticketDAO.getTicketsByUser(currentUser.getUserId());
+        // Simpan ke variabel global 'tickets' agar bisa diakses saat klik mouse
+        tickets = ticketDAO.getTicketsByUser(currentUser.getUserId());
         
         for (Ticket t : tickets) {
-            // Kita perlu mengambil Nama Event (karena di tabel tiket cuma ada ID Event)
             Event ev = eventDAO.getEventById(t.getEventId());
-            String namaEvent = (ev != null) ? ev.getNamaEvent() : "Event Tidak Ditemukan";
+            String namaEvent = (ev != null) ? ev.getNamaEvent() : "Event Dihapus";
 
             model.addRow(new Object[]{
                 t.getTicketId(),
                 namaEvent,
                 t.getTanggalBeli(),
-                t.getJumlah(),
-                "Rp " + t.getTotalHarga(),
                 t.getStatus()
             });
-        }
-        
-        if (tickets.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Anda belum memiliki riwayat pembelian tiket.");
         }
     }
 }
