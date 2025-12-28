@@ -1,3 +1,87 @@
+<?php
+ob_start();
+session_start();
+require_once 'config/koneksi.php';
+
+// Jika sudah login, arahkan sesuai role
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: admin.php");
+    } elseif ($_SESSION['role'] === 'user') {
+        header("Location: dashboard.php");
+    }
+    exit;
+}
+
+$error = "";
+
+// Jika tombol login ditekan
+if (isset($_POST['login'])) {
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+
+    if (!empty($email) && !empty($password)) {
+
+        //Cek apakah email ada di tabel admins
+        $stmt = $conn->prepare("SELECT admin_id, nama, password FROM admins WHERE email = ?");
+        if ($stmt) {
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $result_admin = $stmt->get_result();
+
+            if ($result_admin && $result_admin->num_rows === 1) {
+                $admin = $result_admin->fetch_assoc();
+
+                // Karena password tidak di-hash
+                if ($password === $admin['password']) {
+                    $_SESSION['admin_id'] = $admin['admin_id'];
+                    $_SESSION['nama'] = $admin['nama'];
+                    $_SESSION['email'] = $email;
+                    $_SESSION['role'] = 'admin';
+
+                    header("Location: admin.php");
+                    exit;
+                } else {
+                    $error = "Password salah!";
+                }
+            } else {
+                // Jika bukan admin, cek di tabel users
+                $stmt = $conn->prepare("SELECT user_id, nama, password FROM users WHERE email = ?");
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result_user = $stmt->get_result();
+
+                if ($result_user && $result_user->num_rows === 1) {
+                    $user = $result_user->fetch_assoc();
+
+                    if ($password === $user['password']) {
+                        $_SESSION['user_id'] = $user['user_id'];
+                        $_SESSION['nama'] = $user['nama'];
+                        $_SESSION['email'] = $email;
+                        $_SESSION['role'] = 'user';
+
+                        header("Location: dashboard.php");
+                        exit;
+                    } else {
+                        $error = "Password salah!";
+                    }
+                } else {
+                    $error = "Email tidak ditemukan!";
+                }
+            }
+
+            $stmt->close();
+        } else {
+            $error = "Terjadi kesalahan pada query database.";
+        }
+    } else {
+        $error = "Semua kolom wajib diisi!";
+    }
+}
+
+ob_end_flush();
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -6,7 +90,8 @@
     <title>Login - EventTix</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         body {
             background-color: #f0f2f5;
@@ -117,11 +202,22 @@
         </form>
 
         <div class="login-footer">
-            Belum punya akun? <a href="#">Daftar Sekarang</a>
+            Belum punya akun? <a href="register.php">Daftar Sekarang</a>
         </div>
 
         <a href="index.php" class="back-link">&larr; Kembali ke Beranda</a>
     </div>
+
+    <?php if (!empty($error)): ?>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Login Gagal',
+            text: '<?php echo $error; ?>',
+            confirmButtonColor: '#1a56db'
+        });
+    </script>
+    <?php endif; ?>
 
 </body>
 </html>
