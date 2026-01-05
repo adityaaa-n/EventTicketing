@@ -2,15 +2,13 @@
 session_start();
 require_once 'config/koneksi.php';
 
-// cek apakah ada ID di URL
 if (!isset($_GET['id'])) {
-    header("Location: index.php"); // Jika tidak ada ID, kembali ke halaman utama
+    header("Location: index.php"); 
     exit();
 }
 
 $event_id = $_GET['id'];
 
-// ambil detail event berdasarkan ID
 $query = "SELECT * FROM events WHERE event_id = '$event_id'";
 $result = mysqli_query($conn, $query);
 $row = mysqli_fetch_assoc($result);
@@ -20,12 +18,19 @@ if (!$row) {
     exit();
 }
 
-// Format data untuk tampilan
 $tanggal = date('d F Y', strtotime($row['tanggal']));
 $waktu = date('H:i', strtotime($row['waktu']));
 $harga = "Rp " . number_format($row['harga'], 0, ',', '.');
 
-// Tentukan halaman kembali berdasarkan status login
+$gambar_db = $row['gambar'];
+$path_gambar = "assets/images/" . $gambar_db;
+
+if (!empty($gambar_db) && file_exists($path_gambar)) {
+    $img_src = $path_gambar;
+} else {
+    $img_src = "https://source.unsplash.com/1200x600/?concert,event&sig=" . $row['event_id'];
+}
+
 if (isset($_SESSION['user_id'])) {
     $back_link = "dashboard.php";
 } else {
@@ -39,11 +44,11 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($row['nama_event']); ?> - EventTix</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
-            user-select: none; /* Cegah teks diseleksi */
+            user-select: none; 
         }
         body {
             background-color: #f0f2f5;
@@ -195,7 +200,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="detail-container">
             
             <div class="detail-banner">
-                <img src="https://source.unsplash.com/1200x600/?concert,event&sig=<?php echo $row['event_id']; ?>" alt="Banner">
+                <img src="<?php echo $img_src; ?>" alt="Banner Event">
             </div>
 
             <div class="detail-content">
@@ -261,5 +266,11 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 
+<a href="https://wa.me/6281324351763?text=Halo%20Admin..." 
+   class="wa-float" 
+   target="_blank" 
+   title="Hubungi CS">
+    <i class="fa-brands fa-whatsapp"></i>
+</a>
 </body>
 </html>

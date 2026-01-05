@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($check->num_rows > 0) {
       $popup = "email_exists";
     } else {
-      // Simpan password tanpa hash (plain text)
+      // Simpan password tanpa hash
       $stmt = $conn->prepare("INSERT INTO users (nama, email, password) VALUES (?, ?, ?)");
       $stmt->bind_param("sss", $nama, $email, $pass);
 

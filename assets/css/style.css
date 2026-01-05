@@ -182,6 +182,9 @@ body {
 
 .card-content {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .event-title {
@@ -353,4 +356,43 @@ body {
 
 .btn-buy:hover {
     background-color: #1545b3;
+}
+
+/* --- WHATSAPP --- */
+.wa-float {
+    position: fixed;
+    top: 780px;          
+    right: 10px;          
+    width: 50px;          
+    height: 50px;         
+    font-size: 40px;      
+    
+    background-color: #25d366; 
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.wa-float:hover {
+    background-color: #128c7e;
+    transform: scale(1.1);
+}
+
+/* Responsif untuk HP */
+@media (max-width: 600px) {
+    .wa-float {
+        width: 60px;
+        height: 60px;
+        font-size: 30px;
+        top: auto;
+        bottom: 20px;
+        right: 20px;
+    }
 }

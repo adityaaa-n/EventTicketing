@@ -11,7 +11,7 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventTix - Temukan Event Favoritmu</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -31,10 +31,10 @@ $result = mysqli_query($conn, $query);
         <div class="container">
             <h1>Temukan Event Favoritmu</h1>
             <p>Dapatkan tiket untuk konser, pertandingan olahraga, konferensi, dan berbagai event menarik lainnya</p>
-            <div class="search-box">
+            <form action="dashboard.php" method="GET" class="search-box">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" placeholder="Cari event atau lokasi...">
-            </div>
+                <input type="text" name="cari" placeholder="Cari event atau lokasi...">
+            </form>
         </div>
     </header>
 
@@ -84,8 +84,7 @@ $result = mysqli_query($conn, $query);
 
                         <div class="price-tag"><?php echo $harga; ?></div>
                         
-                        <a href="detail.php?id=<?php echo $row['event_id']; ?>" 
-                           style="display:block; margin-top:10px; text-align:center; background:#1a56db; color:white; padding:10px; border-radius:8px; text-decoration:none;">
+                        <a href="detail.php?id=<?php echo $row['event_id']; ?>" >
                            Lihat Detail
                         </a>
                     </div>
@@ -100,6 +99,14 @@ $result = mysqli_query($conn, $query);
             </div>
         </div>
     </section>
+
+<!-- Tombol WA-->
+<a href="https://wa.me/6281324351763?text=Halo%20Admin..." 
+   class="wa-float" 
+   target="_blank" 
+   title="Hubungi CS">
+    <i class="fa-brands fa-whatsapp"></i>
+</a>
 
 </body>
 </html>

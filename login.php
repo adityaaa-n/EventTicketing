@@ -3,7 +3,6 @@ ob_start();
 session_start();
 require_once 'config/koneksi.php';
 
-// Jika sudah login, arahkan sesuai role
 if (isset($_SESSION['role'])) {
     if ($_SESSION['role'] === 'admin') {
         header("Location: admin.php");
@@ -15,14 +14,12 @@ if (isset($_SESSION['role'])) {
 
 $error = "";
 
-// Jika tombol login ditekan
 if (isset($_POST['login'])) {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
     if (!empty($email) && !empty($password)) {
 
-        //Cek apakah email ada di tabel admins
         $stmt = $conn->prepare("SELECT admin_id, nama, password FROM admins WHERE email = ?");
         if ($stmt) {
             $stmt->bind_param("s", $email);
@@ -32,7 +29,6 @@ if (isset($_POST['login'])) {
             if ($result_admin && $result_admin->num_rows === 1) {
                 $admin = $result_admin->fetch_assoc();
 
-                // Karena password tidak di-hash
                 if ($password === $admin['password']) {
                     $_SESSION['admin_id'] = $admin['admin_id'];
                     $_SESSION['nama'] = $admin['nama'];
@@ -45,7 +41,6 @@ if (isset($_POST['login'])) {
                     $error = "Password salah!";
                 }
             } else {
-                // Jika bukan admin, cek di tabel users
                 $stmt = $conn->prepare("SELECT user_id, nama, password FROM users WHERE email = ?");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();
