@@ -5,9 +5,10 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 }
 
+/* Update by Adit: Mengubah wanra agar menyesuaikan */
 body {
     background-color: #f8f9fa; 
-    color: #333;
+    color: #615e5e;
 }
 
 .container {
