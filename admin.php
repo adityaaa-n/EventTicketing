@@ -7,6 +7,14 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
+// HITUNG NOTIFIKASI TRANSAKSI BARU (status paid)
+$notif_transaksi = 0;
+$qNotif = $conn->query("SELECT COUNT(*) AS total FROM tickets WHERE status = 'paid'");
+if ($qNotif) {
+    $dataNotif = $qNotif->fetch_assoc();
+    $notif_transaksi = (int)$dataNotif['total'];
+}
+
 
 // Ambil data lama jika mode Edit
 $edit_mode = false;
@@ -112,39 +120,52 @@ $result = $conn->query("SELECT * FROM events ORDER BY event_id DESC");
         .menu-item.active { background: #eef2ff; color: #1a56db; font-weight: 600; border-left: 4px solid #1a56db; }
         .menu-logout { margin-top: 50px; color: #e3342f; }
         .menu-logout:hover { background: #fee2e2; color: #c53030; }
-
         .main-content { margin-left: 260px; padding: 40px; width: 100%; }
         .page-title { margin-bottom: 25px; color: #333; font-size: 24px; font-weight: bold; }
-
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 30px; border: 1px solid #eee; }
         .form-title { font-size: 16px; font-weight: bold; margin-bottom: 20px; color: #1a56db; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; font-size: 14px; outline: none; }
         input:focus, select:focus, textarea:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1); }
-        
         .btn-submit { background: #1a56db; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; }
         .btn-submit:hover { background: #1545b3; }
-        
         table { width: 100%; border-collapse: collapse; }
         th { background: #f8f9fa; color: #333; padding: 15px; text-align: left; font-size: 14px; font-weight: 600; border-bottom: 2px solid #eee; }
         td { padding: 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #444; vertical-align: middle; }
-        
         .btn-act { padding: 6px 10px; border-radius: 6px; color: white; font-size: 12px; text-decoration: none; margin-right: 5px; display: inline-block; }
         .btn-edit { background: #28a745; }
         .btn-del { background: #dc3545; }
-
         .badge-stok { background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
         .thumb-img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+        .notif-badge { background: #3b82f6; color: white; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; margin-left: auto; }
+        .menu-item { display: flex; align-items: center; }
+
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <h2><i class="fa-solid fa-ticket"></i> AdminPanel</h2>
-        <a href="admin.php" class="menu-item active"><i class="fa-solid fa-calendar-days"></i> Kelola Event</a>
-        <a href="admin_transaksi.php" class="menu-item"><i class="fa-solid fa-money-bill-transfer"></i> Transaksi</a>
-        <a href="logout.php" class="menu-item menu-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
-    </div>
+<div class="sidebar">
+    <h2><i class="fa-solid fa-ticket"></i> AdminPanel</h2>
+
+    <a href="admin.php" class="menu-item active">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Kelola Event</span>
+    </a>
+
+    <a href="admin_transaksi.php" class="menu-item">
+        <i class="fa-solid fa-money-bill-transfer"></i>
+        <span>Transaksi</span>
+
+        <?php if ($notif_transaksi > 0): ?>
+            <span class="notif-badge"><?= $notif_transaksi ?></span>
+        <?php endif; ?>
+    </a>
+
+    <a href="logout.php" class="menu-item menu-logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Logout</span>
+    </a>
+</div>
+
 
     <div class="main-content">
         <div class="page-title">Manajemen Event</div>
