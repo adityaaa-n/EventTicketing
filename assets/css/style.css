@@ -17,9 +17,9 @@ body {
 }
 
 /* --- NAVBAR --- */
-/* Update by Adit: ubah warna navbar */
+/* Update by Adit: ubah warna navbar menjadi abu-abu keputihan*/
 .navbar {
-    background: #e6e7e8;
+    background: #bfc0c2;
     padding: 15px 0;
     border-bottom: 1px solid #e5e5e5;
     position: sticky;
