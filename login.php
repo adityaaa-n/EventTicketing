@@ -175,7 +175,8 @@ ob_end_flush();
     </style>
 </head>
 <body>
-
+<!-- Debug login -->
+ 
     <div class="login-card">
         <div class="login-logo">
             <i class="fa-solid fa-ticket"></i> EventTix
