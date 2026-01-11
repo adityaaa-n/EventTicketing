@@ -145,7 +145,8 @@ $conn->close();
   </style>
 </head>
 <body>
-
+<!-- Verifikasi register-->
+ 
   <div class="register-card">
     <div class="register-logo">
       <i class="fa-solid fa-ticket"></i> EventTix
