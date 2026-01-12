@@ -85,7 +85,8 @@ $result = mysqli_query($conn, $query);
 
                         <div class="price-tag"><?php echo $harga; ?></div>
                         
-                        <a href="detail.php?id=<?php echo $row['event_id']; ?>" >
+                        <a href="detail.php?id=<?php echo $row['event_id']; ?>" 
+                            style="display:block; margin-top:15px; text-align:center; background:#1a56db; color:white; padding:10px; border-radius:8px; text-decoration:none; font-weight: 600;">
                            Lihat Detail
                         </a>
                     </div>

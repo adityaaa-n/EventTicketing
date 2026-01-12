@@ -5,10 +5,10 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 }
 
-/* Update by Adit: Mengubah wanra agar menyesuaikan */
+/* Update: Mengembalikan warna standar yang bersih */
 body {
     background-color: #f8f9fa; 
-    color: #615e5e;
+    color: #333;
 }
 
 .container {
@@ -18,9 +18,8 @@ body {
 }
 
 /* --- NAVBAR --- */
-/* Update by Adit: ubah warna navbar menjadi abu-abu keputihan*/
 .navbar {
-    background: #bfc0c2;
+    background: white;
     padding: 15px 0;
     border-bottom: 1px solid #e5e5e5;
     position: sticky;
