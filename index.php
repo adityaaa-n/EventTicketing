@@ -43,10 +43,14 @@ $result = mysqli_query($conn, $query);
         <div class="container">
             <div class="section-title"><i class="fa-solid fa-filter"></i> Kategori</div>
             <div class="category-pills">
-                <a href="#" class="pill active">Semua</a>
+                <?php 
+                    $link_cari = !empty($kata_kunci) ? '&cari=' . urlencode($kata_kunci) : ''; 
+                ?>
+                <a href="#" class="pill">Semua</a>
                 <a href="#" class="pill">Musik</a>
                 <a href="#" class="pill">Olahraga</a>
                 <a href="#" class="pill">Konferensi</a>
+                <a href="#" class="pill">Lainnya</a>
             </div>
         </div>
     </section>
