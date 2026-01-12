@@ -175,6 +175,7 @@ ob_end_flush();
     </style>
 </head>
 <body>
+<!-- Debug login -->
 
     <div class="login-card">
         <div class="login-logo">
@@ -182,7 +183,7 @@ ob_end_flush();
         </div>
         <p class="login-subtitle">Masuk untuk membeli tiket event favoritmu</p>
 
-        <form action="" method="POST">
+        <form action="" method="POST" id="loginForm">
             <div class="form-group">
                 <label>Email Address</label>
                 <input type="email" name="email" class="form-control" placeholder="user@example.com" required>
