@@ -1,3 +1,4 @@
+// Versi 2.0 - Update styling oleh Aditya
 <?php
 require_once 'config/koneksi.php';
 
