@@ -2,11 +2,13 @@
 session_start();
 require_once 'config/koneksi.php';
 
+// 1. Cek Login
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: login.php");
     exit;
 }
 
+// 2. Validasi URL
 if (!isset($_GET['event_id']) || !isset($_GET['jumlah'])) {
     header("Location: index.php");
     exit;
@@ -15,6 +17,7 @@ if (!isset($_GET['event_id']) || !isset($_GET['jumlah'])) {
 $event_id = $_GET['event_id'];
 $jumlah = (int)$_GET['jumlah'];
 
+// 3. Ambil Data Event
 $stmt = $conn->prepare("SELECT * FROM events WHERE event_id = ?");
 $stmt->bind_param("i", $event_id);
 $stmt->execute();
@@ -22,6 +25,7 @@ $event = $stmt->get_result()->fetch_assoc();
 
 if (!$event) { echo "Event tidak valid"; exit; }
 
+// Logika Gambar
 $gambar_db = $event['gambar'];
 $path_gambar = "assets/images/" . $gambar_db;
 
@@ -31,6 +35,7 @@ if (!empty($gambar_db) && file_exists($path_gambar)) {
     $img_src = "https://via.placeholder.com/150x150?text=No+Image";
 }
 
+// Hitung Harga
 $total_harga = $event['harga'] * $jumlah;
 $biaya_admin = 5000; 
 $grand_total = $total_harga + $biaya_admin;
@@ -85,6 +90,33 @@ $grand_total = $total_harga + $biaya_admin;
         }
         .event-summary { display: flex; gap: 15px; margin-bottom: 20px; }
         .event-summary img { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; }
+        
+        /* Style Input & Select */
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #fff;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        label { font-weight: 600; font-size: 14px; color: #333; }
+
+        /* Style Kotak Info Rekening (Penting!) */
+        #info-rekening {
+            display: none; /* Sembunyi dulu */
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #0d47a1;
+            margin-bottom: 20px;
+        }
+        #info-rekening strong { display: block; margin-bottom: 5px; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -103,10 +135,8 @@ $grand_total = $total_harga + $biaya_admin;
 
         <div class="card">
             <div class="section-header">Review Pesanan</div>
-            
             <div class="event-summary">
                 <img src="<?= $img_src ?>" alt="<?= htmlspecialchars($event['nama_event']) ?>">
-                
                 <div>
                     <h3 style="font-size: 18px; margin-bottom: 5px;"><?= htmlspecialchars($event['nama_event']) ?></h3>
                     <p style="color: #666; font-size: 13px;">
@@ -136,6 +166,24 @@ $grand_total = $total_harga + $biaya_admin;
                 <span>Rp <?= number_format($biaya_admin, 0, ',', '.') ?></span>
             </div>
             
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+            
+            <label for="metode">Metode Pembayaran</label>
+            <select name="metode" id="metode" required onchange="tampilkanRekening()">
+                <option value="" disabled selected>- Pilih Metode -</option>
+                <option value="Transfer BCA">Transfer Bank BCA</option>
+                <option value="Transfer Mandiri">Transfer Bank Mandiri</option>
+                <option value="GoPay">E-Wallet (GoPay)</option>
+                <option value="DANA">E-Wallet (DANA)</option>
+            </select>
+
+            <div id="info-rekening">
+                <strong>Nomor Tujuan:</strong>
+                <span id="nomor-tujuan">-</span>
+                <br>
+                <span id="nama-pemilik" style="font-size: 12px; color: #555;">-</span>
+            </div>
+
             <div class="total-row">
                 <span>Total Bayar</span>
                 <span>Rp <?= number_format($grand_total, 0, ',', '.') ?></span>
@@ -148,7 +196,31 @@ $grand_total = $total_harga + $biaya_admin;
     </form>
 </div>
 
-<script src="assets/js/script.js"></script>
+<script>
+    // FUNGSI JS: Untuk menampilkan nomor rekening sesuai pilihan
+    function tampilkanRekening() {
+        var metode = document.getElementById("metode").value;
+        var infoBox = document.getElementById("info-rekening");
+        var nomorTxt = document.getElementById("nomor-tujuan");
+        var namaTxt = document.getElementById("nama-pemilik");
+
+        // Data Rekening (Bisa diubah sesuai kebutuhan)
+        var dataRekening = {
+            "Transfer BCA": { norek: "8830-3344-5566", nama: "a.n PT EventTix Indonesia" },
+            "Transfer Mandiri": { norek: "133-00-9988-7766", nama: "a.n PT EventTix Indonesia" },
+            "GoPay": { norek: "0812-3456-7890", nama: "a.n Admin EventTix" },
+            "DANA": { norek: "0812-3456-7890", nama: "a.n Admin EventTix" }
+        };
+
+        if (dataRekening[metode]) {
+            infoBox.style.display = "block"; // Munculkan kotak
+            nomorTxt.innerText = dataRekening[metode].norek;
+            namaTxt.innerText = dataRekening[metode].nama;
+        } else {
+            infoBox.style.display = "none"; // Sembunyikan jika belum pilih
+        }
+    }
+</script>
 
 <a href="https://wa.me/6281324351763?text=Halo%20Admin..." 
    class="wa-float" 
