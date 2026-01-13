@@ -28,10 +28,17 @@ $result = mysqli_query($conn, $sql);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventTix - Temukan Event Favoritmu</title>
     <link rel="stylesheet" href="assets/css/style.css?v=4"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .card-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
 
@@ -137,7 +144,6 @@ $result = mysqli_query($conn, $sql);
                            Lihat Detail
                         </a>
                     </div>
-                </div>
 
                 <?php 
                     }
@@ -152,7 +158,8 @@ $result = mysqli_query($conn, $sql);
                 ?>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <a href="https://wa.me/6281324351763?text=Halo%20Admin..." 
        class="wa-float" 
