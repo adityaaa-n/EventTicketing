@@ -28,15 +28,49 @@ $result = mysqli_query($conn, $sql);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventTix - Temukan Event Favoritmu</title>
-    <link rel="stylesheet" href="assets/css/style.css?v=4"> 
+    <link rel="stylesheet" href="assets/css/style.css?v=5"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* 1. Memaksa layout menjadi Grid (Kotak-kotak ke samping) */
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsif: 3 kolom di layar lebar, 1 di HP */
+            gap: 25px; /* Jarak antar kartu */
+            margin-top: 30px;
+        }
+
+        /* 2. Merapikan kartu agar tingginya seragam */
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+            height: 100%; /* Agar tinggi kartu sama rata */
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
         .card-image img {
             width: 100%;
             height: 200px;
             object-fit: cover;
+        }
+
+        .card-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Agar tombol selalu di bawah */
         }
     </style>
 </head>
@@ -111,6 +145,7 @@ $result = mysqli_query($conn, $sql);
                         
                         $gambar_db = $row['gambar'];
                         $path_gambar = "assets/images/" . $gambar_db;
+                        
                         if (!empty($gambar_db) && file_exists($path_gambar)) {
                             $img_src = $path_gambar;
                         } else {
@@ -144,11 +179,9 @@ $result = mysqli_query($conn, $sql);
                            Lihat Detail
                         </a>
                     </div>
-
-                <?php 
+                </div> <?php 
                     }
                 } else {
-                    // Tampilan jika data kosong (Keren seperti dashboard)
                     echo "<div style='grid-column: 1/-1; text-align: center; padding: 50px; background:white; border-radius:10px;'>
                             <i class='fa-solid fa-magnifying-glass' style='font-size: 40px; color: #ddd; margin-bottom: 15px;'></i>
                             <p style='color:#666;'>Tidak ada event yang ditemukan.</p>
@@ -156,10 +189,7 @@ $result = mysqli_query($conn, $sql);
                           </div>";
                 }
                 ?>
-            </div>
-        </div>
-    </div>
-</section>
+            </div> </div> </section>
 
     <a href="https://wa.me/6281324351763?text=Halo%20Admin..." 
        class="wa-float" 
