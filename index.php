@@ -5,29 +5,35 @@ require_once 'config/koneksi.php';
 $kategori_pilihan = isset($_GET['kategori']) ? $_GET['kategori'] : 'Semua';
 $kata_kunci       = isset($_GET['cari']) ? $_GET['cari'] : '';
 
-$sql = "SELECT * FROM events WHERE 1=1"; 
+$sql = "SELECT * FROM events WHERE 1=1";
+$params = [];
 
 // Filter Kategori
 if ($kategori_pilihan != 'Semua') {
-    $kat = mysqli_real_escape_string($conn, $kategori_pilihan);
-    $sql .= " AND kategori = '$kat'";
+    $sql .= " AND kategori = ?";
+    $params[] = $kategori_pilihan;
 }
 
 // Filter Pencarian
 if (!empty($kata_kunci)) {
-    $cari = mysqli_real_escape_string($conn, $kata_kunci);
-    $sql .= " AND (nama_event LIKE '%$cari%' OR lokasi LIKE '%$cari%')";
+    $sql .= " AND (nama_event LIKE ? OR lokasi LIKE ?)";
+    $params[] = "%$kata_kunci%";
+    $params[] = "%$kata_kunci%";
 }
 
 $sql .= " ORDER BY tanggal ASC";
 
-$result = mysqli_query($conn, $sql);
+$stmt = $conn->prepare($sql);
+$stmt->execute($params);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$row_count = count($rows);
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventTix - Temukan Event Favoritmu</title>
     <link rel="stylesheet" href="assets/css/style.css?v=5"> 
@@ -137,8 +143,8 @@ $result = mysqli_query($conn, $sql);
             
             <div class="event-grid">
                 <?php
-                if (mysqli_num_rows($result) > 0) {
-                    while($row = mysqli_fetch_assoc($result)) {
+                if ($row_count > 0) {
+                    foreach ($rows as $row) {
                         $tanggal = date('d F Y', strtotime($row['tanggal']));
                         $jam = date('H:i', strtotime($row['waktu']));
                         $harga = "Rp " . number_format($row['harga'], 0, ',', '.');

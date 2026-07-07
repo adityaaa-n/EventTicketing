@@ -11,7 +11,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 $notif_transaksi = 0;
 $qNotif = $conn->query("SELECT COUNT(*) AS total FROM tickets WHERE status = 'paid'");
 if ($qNotif) {
-    $dataNotif = $qNotif->fetch_assoc();
+    $dataNotif = $qNotif->fetch(PDO::FETCH_ASSOC);
     $notif_transaksi = (int)$dataNotif['total'];
 }
 
@@ -23,9 +23,8 @@ if (isset($_GET['edit'])) {
     $edit_mode = true;
     $id_edit = $_GET['edit'];
     $stmt = $conn->prepare("SELECT * FROM events WHERE event_id = ?");
-    $stmt->bind_param("i", $id_edit);
-    $stmt->execute();
-    $data_edit = $stmt->get_result()->fetch_assoc();
+    $stmt->execute([$id_edit]);
+    $data_edit = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 // Simpan Data 
@@ -68,43 +67,42 @@ if (isset($_POST['simpan'])) {
         $id = $_POST['event_id'];
         
         $stmt = $conn->prepare("UPDATE events SET nama_event=?, tanggal=?, waktu=?, lokasi=?, harga=?, deskripsi=?, kategori=?, kuota=?, gambar=? WHERE event_id=?");
-        $stmt->bind_param("ssssdssisi", $nama_event, $tanggal, $waktu, $lokasi, $harga, $deskripsi, $kategori, $kuota, $gambar_db, $id);
+        $stmt->execute([$nama_event, $tanggal, $waktu, $lokasi, $harga, $deskripsi, $kategori, $kuota, $gambar_db, $id]);
         
     } else {
         // INSERT DATA BARU
         $stmt = $conn->prepare("INSERT INTO events (nama_event, tanggal, waktu, lokasi, harga, deskripsi, kategori, kuota, gambar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssdssis", $nama_event, $tanggal, $waktu, $lokasi, $harga, $deskripsi, $kategori, $kuota, $gambar_db);
+        $stmt->execute([$nama_event, $tanggal, $waktu, $lokasi, $harga, $deskripsi, $kategori, $kuota, $gambar_db]);
     }
     
-    if ($stmt->execute()) {
-        echo "<script>alert('Data berhasil disimpan!'); window.location.href='admin.php';</script>";
-    } else {
-        echo "<script>alert('Gagal menyimpan data: " . $stmt->error . "');</script>";
-    }
+    echo "<script>alert('Data berhasil disimpan!'); window.location.href='admin.php';</script>";
 }
 
 // Hapus Event
 if (isset($_GET['hapus'])) {
-    $id = $_GET['hapus'];
-    $q = $conn->query("SELECT gambar FROM events WHERE event_id = $id");
-    $img = $q->fetch_assoc();
+    $id = intval($_GET['hapus']);
+    $q = $conn->prepare("SELECT gambar FROM events WHERE event_id = ?");
+    $q->execute([$id]);
+    $img = $q->fetch(PDO::FETCH_ASSOC);
     if ($img['gambar'] && file_exists("assets/images/" . $img['gambar'])) {
         unlink("assets/images/" . $img['gambar']);
     }
 
-    $conn->query("DELETE FROM events WHERE event_id = $id");
+    $conn->prepare("DELETE FROM events WHERE event_id = ?")->execute([$id]);
     header("Location: admin.php");
     exit;
 }
 
 // Ambil Daftar Event
 $result = $conn->query("SELECT * FROM events ORDER BY event_id DESC");
+$events_list = $result->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <title>Kelola Event - AdminPanel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -258,7 +256,7 @@ $result = $conn->query("SELECT * FROM events ORDER BY event_id DESC");
                 <tbody>
                     <?php 
                     $no=1; 
-                    while($row = $result->fetch_assoc()) { 
+                    foreach ($events_list as $row) { 
                         $imgSrc = !empty($row['gambar']) ? "assets/images/".$row['gambar'] : "https://via.placeholder.com/50";
                         
                         echo "<tr>

@@ -1,13 +1,19 @@
 <?php
 
-$host = "localhost";
-$user = "root";      
-$pass = "";          
-$db   = "db_event_ticketing"; 
+$host = "db.seufwkortmywrvkuyglj.supabase.co";
+$port = "5432";
+$user = "postgres";
+// PERHATIAN: Masukkan password database Supabase Anda di bawah ini
+$pass = "tabahmuhamad2"; 
+$db   = "postgres"; 
 
-$conn = mysqli_connect($host, $user, $pass, $db);
+$dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
 
-if (!$conn) {
-    die("Koneksi Database Gagal: " . mysqli_connect_error());
+try {
+    $conn = new PDO($dsn, $user, $pass);
+    // Set error mode to exception
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Koneksi Database Gagal: " . $e->getMessage());
 }
 ?>

@@ -17,35 +17,31 @@ if (isset($_GET['hapus_id'])) {
     $id_hapus = intval($_GET['hapus_id']);
 
     // Cek dulu datanya
-    $cek_query = "SELECT t.status, CONCAT(e.tanggal, ' ', e.waktu) as waktu_event 
+    $cek_stmt = $conn->prepare("SELECT t.status, CONCAT(e.tanggal::text, ' ', e.waktu::text) as waktu_event 
                   FROM tickets t 
                   JOIN events e ON t.event_id = e.event_id 
-                  WHERE t.ticket_id = $id_hapus";
-    $cek_result = $conn->query($cek_query);
+                  WHERE t.ticket_id = ?");
+    $cek_stmt->execute([$id_hapus]);
     
-    if ($cek_result->num_rows > 0) {
-        $data_cek = $cek_result->fetch_assoc();
+    if ($cek_stmt->rowCount() > 0) {
+        $data_cek = $cek_stmt->fetch(PDO::FETCH_ASSOC);
         $is_expired = ($sekarang > $data_cek['waktu_event']);
 
-        // SYARAT HAPUS DIPERLUAS: 
-        // Boleh hapus jika: Ditolak (Rejected) ATAU Selesai (Confirmed) ATAU Expired
         if ($data_cek['status'] == 'rejected' || $data_cek['status'] == 'confirmed' || $is_expired) {
             
             // Hapus Payment Log dulu (agar tidak error foreign key)
-            $conn->query("DELETE FROM payment_logs WHERE ticket_id = $id_hapus");
+            $conn->prepare("DELETE FROM payment_logs WHERE ticket_id = ?")->execute([$id_hapus]);
             
             // Hapus Tiket
             $stmt = $conn->prepare("DELETE FROM tickets WHERE ticket_id = ?");
-            $stmt->bind_param("i", $id_hapus);
             
-            if ($stmt->execute()) {
+            if ($stmt->execute([$id_hapus])) {
                 $_SESSION['flash_message'] = "Data riwayat transaksi berhasil dihapus.";
                 $_SESSION['flash_type'] = "success";
             } else {
                 $_SESSION['flash_message'] = "Gagal menghapus data.";
                 $_SESSION['flash_type'] = "error";
             }
-            $stmt->close();
         } else {
             $_SESSION['flash_message'] = "Data yang sedang diproses (Paid/Pending) tidak boleh dihapus.";
             $_SESSION['flash_type'] = "error";
@@ -66,9 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['tic
 
     if ($status_baru) {
         $stmt = $conn->prepare("UPDATE tickets SET status = ? WHERE ticket_id = ?");
-        $stmt->bind_param("si", $status_baru, $id);
-        $stmt->execute();
-        $stmt->close();
+        $stmt->execute([$status_baru, $id]);
         
         $_SESSION['flash_message'] = "Status berhasil diperbarui.";
         $_SESSION['flash_type'] = "success";
@@ -83,15 +77,18 @@ $query = "SELECT t.*, u.nama as nama_user, e.nama_event, e.tanggal, e.waktu, p.w
           JOIN users u ON t.user_id = u.user_id 
           JOIN events e ON t.event_id = e.event_id
           LEFT JOIN payment_logs p ON t.ticket_id = p.ticket_id
-          ORDER BY FIELD(t.status, 'paid', 'pending', 'confirmed', 'rejected'), t.tanggal_beli DESC";
+          ORDER BY CASE t.status WHEN 'paid' THEN 1 WHEN 'pending' THEN 2 WHEN 'confirmed' THEN 3 WHEN 'rejected' THEN 4 ELSE 5 END, t.tanggal_beli DESC";
 
-$result = $conn->query($query);
+$result_stmt = $conn->query($query);
+$all_rows = $result_stmt->fetchAll(PDO::FETCH_ASSOC);
+$total_rows = count($all_rows);
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <title>Transaksi - AdminPanel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -170,8 +167,8 @@ $result = $conn->query($query);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($result->num_rows > 0): ?>
-                        <?php while($row = $result->fetch_assoc()): ?>
+                    <?php if ($total_rows > 0): ?>
+                        <?php foreach ($all_rows as $row): ?>
                         <?php 
                             $event_time = $row['tanggal'] . ' ' . $row['waktu'];
                             $is_expired = ($sekarang > $event_time);
@@ -240,7 +237,7 @@ $result = $conn->query($query);
                                 <?php endif; ?>
                             </td>
                         </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     <?php else: ?>
                         <tr><td colspan="7" style="text-align:center;">Belum ada data.</td></tr>
                     <?php endif; ?>

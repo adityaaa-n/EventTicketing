@@ -14,18 +14,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Insert ke Tabel Tickets
     $stmt = $conn->prepare("INSERT INTO tickets (user_id, event_id, jumlah, total_harga, status) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("iiids", $user_id, $event_id, $jumlah, $total_harga, $status);
 
-    if ($stmt->execute()) {
-        $ticket_id = $stmt->insert_id; 
+    if ($stmt->execute([$user_id, $event_id, $jumlah, $total_harga, $status])) {
+        $ticket_id = $conn->lastInsertId();
 
         // Kurangi Kuota Event
-        $conn->query("UPDATE events SET kuota = kuota - $jumlah WHERE event_id = $event_id");
+        $conn->prepare("UPDATE events SET kuota = kuota - ? WHERE event_id = ?")->execute([$jumlah, $event_id]);
 
         // Ke halaman Pembayaran
         header("Location: pembayaran.php?id=" . $ticket_id);
     } else {
-        echo "Error: " . $conn->error;
+        echo "Error: Gagal menyimpan tiket.";
     }
 } else {
     header("Location: index.php");

@@ -7,11 +7,11 @@ if (!isset($_GET['id'])) {
     exit();
 }
 
-$event_id = $_GET['id'];
+$event_id = intval($_GET['id']);
 
-$query = "SELECT * FROM events WHERE event_id = '$event_id'";
-$result = mysqli_query($conn, $query);
-$row = mysqli_fetch_assoc($result);
+$stmt = $conn->prepare("SELECT * FROM events WHERE event_id = ?");
+$stmt->execute([$event_id]);
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$row) {
     echo "Event tidak ditemukan.";
@@ -42,6 +42,7 @@ if (isset($_SESSION['user_id'])) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($row['nama_event']); ?> - EventTix</title>
     <link rel="stylesheet" href="assets/css/style.css?v=2">

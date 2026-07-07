@@ -1,15 +1,5 @@
 <?php
-// --- Koneksi ke database ---
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "db_event_ticketing";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-  die("Koneksi gagal: " . $conn->connect_error);
-}
+require_once 'config/koneksi.php';
 
 $popup = ""; // untuk SweetAlert
 
@@ -20,35 +10,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   if (!empty($nama) && !empty($email) && !empty($pass)) {
     $check = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
-    $check->bind_param("s", $email);
-    $check->execute();
-    $check->store_result();
+    $check->execute([$email]);
 
-    if ($check->num_rows > 0) {
+    if ($check->rowCount() > 0) {
       $popup = "email_exists";
     } else {
       // Simpan password tanpa hash
       $stmt = $conn->prepare("INSERT INTO users (nama, email, password) VALUES (?, ?, ?)");
-      $stmt->bind_param("sss", $nama, $email, $pass);
 
-      if ($stmt->execute()) {
+      if ($stmt->execute([$nama, $email, $pass])) {
         $popup = "success";
       } else {
         $popup = "error";
       }
-
-      $stmt->close();
     }
-    $check->close();
   }
 }
-
-$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar - EventTix</title>
   <link rel="stylesheet" href="assets/css/style.css">

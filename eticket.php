@@ -22,10 +22,8 @@ $query = "SELECT t.*, e.nama_event, e.tanggal, e.waktu, e.lokasi, u.nama as nama
           WHERE t.ticket_id = ? AND t.user_id = ? AND t.status = 'confirmed'";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("ii", $ticket_id, $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$data = $result->fetch_assoc();
+$stmt->execute([$ticket_id, $user_id]);
+$data = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$data) {
     echo "<div style='text-align:center; padding:50px;'>
@@ -41,6 +39,7 @@ if (!$data) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <title>E-Ticket #<?= $ticket_id ?> - EventTix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>

@@ -11,15 +11,19 @@ date_default_timezone_set('Asia/Jakarta');
 $query = "SELECT t.*, e.nama_event, e.tanggal, e.waktu, e.lokasi, e.gambar 
           FROM tickets t 
           JOIN events e ON t.event_id = e.event_id 
-          WHERE t.user_id = $user_id 
+          WHERE t.user_id = ? 
           ORDER BY t.tanggal_beli DESC";
-$result = $conn->query($query);
+$stmt = $conn->prepare($query);
+$stmt->execute([$user_id]);
+$all_tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$ticket_count = count($all_tickets);
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <title>Tiket Saya - EventTix</title>
     <link rel="stylesheet" href="assets/css/style.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -60,8 +64,8 @@ $result = $conn->query($query);
     <div class="container" style="margin-top: 40px; margin-bottom: 60px;">
         <h2 style="margin-bottom: 25px;">Riwayat Tiket</h2>
 
-        <?php if ($result->num_rows > 0): ?>
-            <?php while($row = $result->fetch_assoc()): ?>
+        <?php if ($ticket_count > 0): ?>
+            <?php foreach ($all_tickets as $row): ?>
                 
                 <?php
                     $event_datetime = $row['tanggal'] . ' ' . $row['waktu'];
@@ -141,7 +145,7 @@ $result = $conn->query($query);
                     </div>
                 </div>
 
-            <?php endwhile; ?>
+            <?php endforeach; ?>
         <?php else: ?>
             <div style="text-align: center; padding: 50px; background: white; border-radius: 12px;">
                 <p style="color: #888;">Belum ada tiket yang dibeli.</p>

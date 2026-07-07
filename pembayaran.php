@@ -15,9 +15,10 @@ $ticket_id = $_GET['id'];
 // 3. Ambil Detail Tiket
 $query = "SELECT t.*, e.nama_event FROM tickets t 
           JOIN events e ON t.event_id = e.event_id 
-          WHERE t.ticket_id = $ticket_id";
-$result = $conn->query($query);
-$data = $result->fetch_assoc();
+          WHERE t.ticket_id = ?";
+$q = $conn->prepare($query);
+$q->execute([$ticket_id]);
+$data = $q->fetch(PDO::FETCH_ASSOC);
 
 if (isset($_POST['upload'])) {
     $nama_file   = $_FILES['bukti']['name'];
@@ -36,20 +37,21 @@ if (isset($_POST['upload'])) {
         $target_file = $target_dir . $nama_baru;
 
         if (move_uploaded_file($tmp_name, $target_file)) {
-            $cek = $conn->query("SELECT * FROM payment_logs WHERE ticket_id = $ticket_id");
+            $cek = $conn->prepare("SELECT * FROM payment_logs WHERE ticket_id = ?");
+            $cek->execute([$ticket_id]);
             
-            if ($cek->num_rows > 0) {
+            if ($cek->rowCount() > 0) {
                 // UPDATE
                 $stmt = $conn->prepare("UPDATE payment_logs SET bukti_pembayaran = ?, waktu_bayar = NOW() WHERE ticket_id = ?");
-                $stmt->bind_param("si", $nama_baru, $ticket_id);
+                $stmt->execute([$nama_baru, $ticket_id]);
             } else {
                 // INSERT
                 $stmt = $conn->prepare("INSERT INTO payment_logs (ticket_id, jumlah_bayar, waktu_bayar, bukti_pembayaran) VALUES (?, ?, NOW(), ?)");
-                $stmt->bind_param("ids", $ticket_id, $data['total_harga'], $nama_baru);
+                $stmt->execute([$ticket_id, $data['total_harga'], $nama_baru]);
             }
 
-            if ($stmt->execute()) {
-                $conn->query("UPDATE tickets SET status = 'paid' WHERE ticket_id = $ticket_id");
+            if ($stmt->rowCount() > 0) {
+                $conn->prepare("UPDATE tickets SET status = 'paid' WHERE ticket_id = ?")->execute([$ticket_id]);
                 
                 echo "<script>
                         alert('Berhasil! Bukti pembayaran terkirim.'); 
@@ -69,6 +71,7 @@ if (isset($_POST['upload'])) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <title>Pembayaran</title>
     <style>
         body { font-family: sans-serif; background: #f4f4f4; display: flex; justify-content: center; padding-top: 50px; }

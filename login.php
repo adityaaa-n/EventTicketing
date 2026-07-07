@@ -22,12 +22,11 @@ if (isset($_POST['login'])) {
 
         $stmt = $conn->prepare("SELECT admin_id, nama, password FROM admins WHERE email = ?");
         if ($stmt) {
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $result_admin = $stmt->get_result();
+            $stmt->execute([$email]);
+            $result_admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($result_admin && $result_admin->num_rows === 1) {
-                $admin = $result_admin->fetch_assoc();
+            if ($result_admin) {
+                $admin = $result_admin;
 
                 if ($password === $admin['password']) {
                     $_SESSION['admin_id'] = $admin['admin_id'];
@@ -41,13 +40,12 @@ if (isset($_POST['login'])) {
                     $error = "Password salah!";
                 }
             } else {
-                $stmt = $conn->prepare("SELECT user_id, nama, password FROM users WHERE email = ?");
-                $stmt->bind_param("s", $email);
-                $stmt->execute();
-                $result_user = $stmt->get_result();
+                $stmt2 = $conn->prepare("SELECT user_id, nama, password FROM users WHERE email = ?");
+                $stmt2->execute([$email]);
+                $result_user = $stmt2->fetch(PDO::FETCH_ASSOC);
 
-                if ($result_user && $result_user->num_rows === 1) {
-                    $user = $result_user->fetch_assoc();
+                if ($result_user) {
+                    $user = $result_user;
 
                     if ($password === $user['password']) {
                         $_SESSION['user_id'] = $user['user_id'];
@@ -64,8 +62,6 @@ if (isset($_POST['login'])) {
                     $error = "Email tidak ditemukan!";
                 }
             }
-
-            $stmt->close();
         } else {
             $error = "Terjadi kesalahan pada query database.";
         }
@@ -81,6 +77,7 @@ ob_end_flush();
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EventTix</title>
     <link rel="stylesheet" href="assets/css/style.css">

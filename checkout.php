@@ -19,9 +19,8 @@ $jumlah = (int)$_GET['jumlah'];
 
 // 3. Ambil Data Event
 $stmt = $conn->prepare("SELECT * FROM events WHERE event_id = ?");
-$stmt->bind_param("i", $event_id);
-$stmt->execute();
-$event = $stmt->get_result()->fetch_assoc();
+$stmt->execute([$event_id]);
+$event = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$event) { echo "Event tidak valid"; exit; }
 
@@ -45,6 +44,7 @@ $grand_total = $total_harga + $biaya_admin;
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <title>Checkout - EventTix</title>
     <link rel="stylesheet" href="assets/css/style.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
